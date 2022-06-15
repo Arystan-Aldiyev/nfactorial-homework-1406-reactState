@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from "react";
 import { v4 as myNewID } from 'uuid';
 
 import "./App.css";
@@ -22,23 +22,90 @@ const buttons = [
 function App() {
   const [itemToDo, setItemToDo] = useState("");
   const [itemToSearch, setItemToSearch] = useState("");
-  const [items, setItems] = useState([
-    {
-      key: myNewID(),
-      label: "Have fun",
-    },
-    {
-      key: myNewID(),
-      label: "Spread Empathy",
-    },
-    {
-      key: myNewID(),
-      label: "Generate Value",
-    },
-  ]);
+  const loadTasks = () => {
+    let itemsParsed = []
+    for (let i = 0; i < localStorage.length; i++) {
+      let itemValue = localStorage.getItem(localStorage.key(i)).split(';')
+      let itemLabel = itemValue[0].split(':')[1]
+      let itemDone = null
+      let itemImp = null
+      if (itemValue[1]) {
+        itemDone = itemValue[1].split(':')[1]
+        if (itemValue[2]) {
+          itemImp = itemValue[2].split(':')[1]
+        }
+        itemsParsed[i] = {
+          key: localStorage.key(i),
+          label: itemLabel,
+          done: itemDone === "true",
+          important: itemImp === "true",
+        }
+      }
+    }
+    return (itemsParsed);
+  }
+
+  const handleChangeDone = (item) => {
+    let value = localStorage.getItem(item.key)
+    if (item.done === true) {
+      value = value.replace("done:true", "done:false")
+    } else {
+      value = value.replace("done:false", "done:true")
+    }
+    console.log(value)
+    localStorage.setItem(item.key, value)
+  }
+
+  const handleChangeImp = (item) => {
+    let value = localStorage.getItem(item.key)
+    if (item.important === true) {
+      value = value.replace("important:true", "important:false")
+    } else {
+      value = value.replace("important:false", "important:true")
+    }
+    console.log(value)
+    localStorage.setItem(item.key, value)
+  }
+
+  const [items, setItems] = useState(() => loadTasks())
+  // const [items, setItems] = useState([
+  //   {
+  //     key: myNewID(),
+  //     label: "Have fun",
+  //     value: "label:Have fun;done:false;important:false",
+  //   },
+  //   {
+  //     key: myNewID(),
+  //     label: "Spread Empathy",
+  //     value: "label:Spread Empathy;done:true;important:true",
+  //   },
+  //   {
+  //     key: myNewID(),
+  //     label: "Generate Value",
+  //     value: "label:Generate Value;done:false;important:true",
+  //   }
+  // ]);
 
   const [filterType, setFilterType] = useState("all");
 
+  const testItems = [{
+    key: myNewID(),
+    label: "Have fun",
+    value: "label:Have fun;done:false;important:false",
+  },
+  {
+    key: myNewID(),
+    label: "Spread Empathy",
+    value: "label:Spread Empathy;done:true;important:true",
+  },
+  {
+    key: myNewID(),
+    label: "Generate Value",
+    value: "label:Generate Value;done:false;important:true",
+  }]
+  // localStorage.setItem(testItems[0].key, testItems[0].value)
+  // localStorage.setItem(testItems[1].key, testItems[1].value)
+  // localStorage.setItem(testItems[2].key, testItems[2].value)
   const handleToDoChange = (event) => {
     setItemToDo(event.target.value);
   }
@@ -49,7 +116,8 @@ function App() {
 
   const handleAddItem = () => {
     const newItem = { key: myNewID(), label: itemToDo }
-
+    let newValue = `label:${newItem.label};done:false;important:false`
+    localStorage.setItem(newItem.key, newValue)
     // Push мутирует (as well as splice shift unshift) --- Плохо
     // const newItems = items;
     // newItems.push(newItem)
@@ -72,6 +140,7 @@ function App() {
     setItems((prevItems) =>
       prevItems.map((item) => {
         if (item.key === key) {
+          handleChangeDone(item)
           return { ...item, done: !item.done };
         } else return item;
       })
@@ -81,8 +150,9 @@ function App() {
   const handleItemImportant = ({ key }) => {
     setItems((prevItems) =>
       prevItems.map((item) => {
-        ///function here
+        ///function herehandleItemImportant
         if (item.key === key) {
+          handleChangeImp(item)
           return { ...item, important: !item.important };
         } else return item;
       })
@@ -90,8 +160,8 @@ function App() {
   };
 
   const handleItemDelete = ({ key }) => {
+    localStorage.removeItem(key)
     const findIndex = items.findIndex((item) => item.key === key)
-
     const leftSide = items.slice(0, findIndex)
     const rightSide = items.slice(findIndex + 1, items.length)
     setItems((prevItem) => [...leftSide, ...rightSide])
@@ -154,7 +224,7 @@ function App() {
         {filteredTwice.length > 0 &&
           filteredTwice.map((item) => (
             <li key={item.key} className="list-group-item" >
-              <span className={`todo-list-item ${item.done ? "done" : ""} ${item.important ? "important" : ""}`}>
+              <span className={`todo-list-item ${(item.done === true) ? "done" : ""} ${(item.important === true) ? "important" : ""}`}>
                 <span className="todo-list-item-label" onClick={() => handleItemDone(item)}>{item.label}</span>
 
                 <button
