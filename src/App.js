@@ -82,13 +82,20 @@ function App() {
     setItems((prevItems) =>
       prevItems.map((item) => {
         ///function here
-        console.log("works")
         if (item.key === key) {
           return { ...item, important: !item.important };
         } else return item;
       })
     );
   };
+
+  const handleItemDelete = ({ key }) => {
+    const findIndex = items.findIndex((item) => item.key === key)
+
+    const leftSide = items.slice(0, findIndex)
+    const rightSide = items.slice(findIndex + 1, items.length)
+    setItems((prevItem) => [...leftSide, ...rightSide])
+  }
 
   const handleFilterChange = ({ type }) => {
     setFilterType(type);
@@ -161,6 +168,8 @@ function App() {
 
                 <button
                   type="button"
+                  key={myNewID()}
+                  onClick={() => handleItemDelete(item)}
                   className="btn btn-outline-danger btn-sm float-right"
                 >
                   <i className="fa fa-trash-o" />
