@@ -29,16 +29,18 @@ function App() {
       let itemLabel = itemValue[0].split(':')[1]
       let itemDone = null
       let itemImp = null
-      if (itemValue[1]) {
-        itemDone = itemValue[1].split(':')[1]
-        if (itemValue[2]) {
-          itemImp = itemValue[2].split(':')[1]
-        }
-        itemsParsed[i] = {
-          key: localStorage.key(i),
-          label: itemLabel,
-          done: itemDone === "true",
-          important: itemImp === "true",
+      if (itemLabel) {
+        if (itemValue[1]) {
+          itemDone = itemValue[1].split(':')[1]
+          if (itemValue[2]) {
+            itemImp = itemValue[2].split(':')[1]
+          }
+          itemsParsed[i] = {
+            key: localStorage.key(i),
+            label: itemLabel,
+            done: itemDone === "true",
+            important: itemImp === "true",
+          }
         }
       }
     }
@@ -88,21 +90,6 @@ function App() {
 
   const [filterType, setFilterType] = useState("all");
 
-  const testItems = [{
-    key: myNewID(),
-    label: "Have fun",
-    value: "label:Have fun;done:false;important:false",
-  },
-  {
-    key: myNewID(),
-    label: "Spread Empathy",
-    value: "label:Spread Empathy;done:true;important:true",
-  },
-  {
-    key: myNewID(),
-    label: "Generate Value",
-    value: "label:Generate Value;done:false;important:true",
-  }]
   // localStorage.setItem(testItems[0].key, testItems[0].value)
   // localStorage.setItem(testItems[1].key, testItems[1].value)
   // localStorage.setItem(testItems[2].key, testItems[2].value)
@@ -115,9 +102,7 @@ function App() {
   }
 
   const handleAddItem = () => {
-    const newItem = { key: myNewID(), label: itemToDo }
-    let newValue = `label:${newItem.label};done:false;important:false`
-    localStorage.setItem(newItem.key, newValue)
+
     // Push мутирует (as well as splice shift unshift) --- Плохо
     // const newItems = items;
     // newItems.push(newItem)
@@ -125,6 +110,9 @@ function App() {
     if (itemToDo.trim() === "") {
 
     } else {
+      const newItem = { key: myNewID(), label: itemToDo }
+      let newValue = `label:${newItem.label};done:false;important:false`
+      localStorage.setItem(newItem.key, newValue)
       setItems((prevItem) => [newItem, ...prevItem]);
     }
     setItemToDo("");
@@ -181,7 +169,7 @@ function App() {
         ? items.filter((item) => item.done)
         : items.filter((item) => !item.done);
 
-  const filteredTwice = itemToSearch ? filteredArray.filter((item) => item.label.toLowerCase().includes(itemToSearch)) : filteredArray
+  const filteredTwice = itemToSearch ? filteredArray.filter((item) => item.label.toLowerCase().includes(itemToSearch.toLowerCase())) : filteredArray
 
 
   return (
